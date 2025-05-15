@@ -82,7 +82,7 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
         val_loader_A_fold = DataLoader(Subset(train_loader_A.dataset, val_idx_A), batch_size=batch_size)
         
         train_loader_B_fold = DataLoader(Subset(train_loader_B.dataset, train_idx_B), batch_size=batch_size, shuffle=True)
-        val_loader_B_fold = DataLoader(Subset(train_loader_A.dataset, val_idx_B), batch_size=batch_size)
+        val_loader_B_fold = DataLoader(Subset(train_loader_B.dataset, val_idx_B), batch_size=batch_size)
 
         # Initialize early stopper
         early_stopper = EarlyStopper(patience=kwargs.get('earlystop_patience', 10), min_delta=kwargs.get('delta', 0.001))
