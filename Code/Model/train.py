@@ -13,7 +13,6 @@ from torch.utils.data import DataLoader, Subset
 from data_loader import load_and_prepare_data
 from evaluate_holdout import *
 
-
 def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate, m_type, epochs, save_path, splits, fusion, device, **kwargs):
     """
     Train the binary classification model using data from two CSV files.
@@ -41,12 +40,6 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
         **kwargs
     )
 
-    # Initialize optimizer, loss function, and training history
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    criterion = nn.BCEWithLogitsLoss()  # Binary classification loss
-
-    model.train()
-
     history = {
         'KLD_train_loss_A': [],
         'KLD_train_loss_B': [],
@@ -72,6 +65,12 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
     sk_splits = sklearn.model_selection.KFold(n_splits=splits)
     for fold, (pair_A, pair_B) in enumerate(zip(sk_splits.split(train_loader_A.dataset), sk_splits.split(train_loader_B.dataset))):
         print(f"Fold {fold + 1}")
+
+    	# Initialize model, optimizer, and criterion
+        for l in model.children():
+            if hasattr(l, 'reset_parameters'): l.reset_parameters()
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+       	criterion = nn.BCEWithLogitsLoss()
 
         # Cross-validation: Split training and validation data
         (train_idx_A, val_idx_A) = pair_A
@@ -140,8 +139,8 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
             avg_OT_loss = OT_loss_epoch / len(train_loader_A_fold)
             avg_classification_loss = classification_loss_epoch / len(train_loader_A_fold)
 
-            history['fold_num'].append(fold)
-            history['epoch_num'].append(fold)
+            history['fold_num'].append(fold+1)
+            history['epoch_num'].append(epoch+1)
             history['KLD_train_loss_A'].append(avg_KLD_loss_A)
             history['KLD_train_loss_B'].append(avg_KLD_loss_B)
             history['OT_train_loss'].append(avg_OT_loss)
@@ -268,10 +267,6 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
         **kwargs
     )
 
-    # Initialize optimizer, loss function, and training history
-    optimizer = optim.Adam(model.parameters(), lr=learning_rate)
-    criterion = nn.MSELoss()  # Continuous regression loss
-
     model.train()
 
     history = {
@@ -293,6 +288,12 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
     for fold, (pair_A, pair_B) in enumerate(zip(sk_splits.split(train_loader_A.dataset), sk_splits.split(train_loader_B.dataset))):
         print(f"Fold {fold + 1}")
 
+        # Initialize model, optimizer, and criterion
+        for l in model.children():
+            if hasattr(l, 'reset_parameters'): l.reset_parameters()
+        optimizer = optim.Adam(model.parameters(), lr=learning_rate)
+        criterion = nn.MSELoss()
+
         # Cross-validation: Split training and validation data
         (train_idx_A, val_idx_A) = pair_A
         (train_idx_B, val_idx_B) = pair_B
@@ -302,7 +303,7 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
         val_loader_A_fold = DataLoader(Subset(train_loader_A.dataset, val_idx_A), batch_size=batch_size)
         
         train_loader_B_fold = DataLoader(Subset(train_loader_B.dataset, train_idx_B), batch_size=batch_size, shuffle=True)
-        val_loader_B_fold = DataLoader(Subset(train_loader_A.dataset, val_idx_B), batch_size=batch_size)
+        val_loader_B_fold = DataLoader(Subset(train_loader_B.dataset, val_idx_B), batch_size=batch_size)
 
         # Initialize early stopper
         early_stopper = EarlyStopper(patience=kwargs.get('earlystop_patience', 10), min_delta=kwargs.get('delta', 0.001))
@@ -361,7 +362,7 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
             avg_regression_loss = regression_loss_epoch / len(train_loader_A_fold)
 
             history['fold_num'].append(fold)
-            history['epoch_num'].append(fold)
+            history['epoch_num'].append(epoch)
             history['KLD_train_loss_A'].append(avg_KLD_loss_A)
             history['KLD_train_loss_B'].append(avg_KLD_loss_B)
             history['OT_train_loss'].append(avg_OT_loss)
