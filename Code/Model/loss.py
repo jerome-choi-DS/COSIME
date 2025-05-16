@@ -127,10 +127,10 @@ def compute_weighted_loss(KLD_loss_A, KLD_loss_B, OT_loss, classification_loss, 
     magnitude_CL = classification_loss.item()
     
     # Inverse losses
-    inverse_magnitude_KLD_A = 1 / (magnitude_KLD_A + 1e-8)  # Adding a small epsilon to avoid division by zero
-    inverse_magnitude_KLD_B = 1 / (magnitude_KLD_B + 1e-8)
-    inverse_magnitude_OT = 1 / (magnitude_OT + 1e-8)
-    inverse_magnitude_CL = 1 / (magnitude_CL + 1e-8)
+    inverse_magnitude_KLD_A = 1 / (magnitude_KLD_A + 1e-6)  # Adding a small epsilon to avoid division by zero
+    inverse_magnitude_KLD_B = 1 / (magnitude_KLD_B + 1e-6)
+    inverse_magnitude_OT = 1 / (magnitude_OT + 1e-6)
+    inverse_magnitude_CL = 1 / (magnitude_CL + 1e-6)
     
     # Normalize the inversed losses to get adjusted weights
     total_inverse = inverse_magnitude_KLD_A + inverse_magnitude_KLD_B + inverse_magnitude_OT + inverse_magnitude_CL
