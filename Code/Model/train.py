@@ -6,14 +6,14 @@ import torch.nn as nn
 from sklearn.metrics import roc_auc_score, average_precision_score, mean_squared_error
 import sklearn.model_selection
 from tqdm import tqdm
-from loss import compute_weighted_loss, KL_divergence, LOT
+from loss import compute_weighted_loss, KL_divergence, LOT, Aligned_OT, Optimal_OT, Sinkhorn_OT
 from utils import EarlyStopper
 from torch.utils.data import DataLoader, Subset
 
 from data_loader import load_and_prepare_data
 from evaluate_holdout import *
 
-def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate, m_type, epochs, save_path, splits, fusion, device, **kwargs):
+def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate, m_type, epochs, save_path, splits, fusion, device, ot_method='LOT', **kwargs):
     """
     Train the binary classification model using data from two CSV files.
 
@@ -109,7 +109,11 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
                 # Compute loss components
                 KLD_loss_A = KL_divergence(mu_A, logsigma_A)
                 KLD_loss_B = KL_divergence(mu_B, logsigma_B)
-                OT_loss = LOT(mu_A, logsigma_A, mu_B, logsigma_B)
+                if ot_method == 'LOT': OT_loss = LOT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'aligned': OT_loss = Aligned_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'optimal': OT_loss = Optimal_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'sinkhorn': OT_loss = Sinkhorn_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                else: raise ValueError(f'Optimal transport type `{ot_method}` not found.')
 
                 # Combine logits and labels for loss calculation
                 if fusion == 'late':
@@ -215,10 +219,19 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
             model, holdout_loader_A, holdout_loader_B, nn.BCEWithLogitsLoss(), fusion, device
         )
 
+        # Log AUROC and AUPRC for the holdout
+        holdout_predicted_probs = torch.sigmoid(holdout_predicted_values).cpu().numpy()
+        holdout_actual_values = holdout_actual_values.cpu().numpy()
+        holdout_auc_score = roc_auc_score(holdout_actual_values, holdout_predicted_probs)
+        holdout_auprc_score = average_precision_score(holdout_actual_values, holdout_predicted_probs)
+
         holdout_history = {
             'KLD_eval_loss_A': [holdout_KLD_loss_A],
             'KLD_eval_loss_B': [holdout_KLD_loss_B],
             'OT_eval_loss': [holdout_OT_loss],
+            'AUROC': [holdout_auc_score],
+            'AUPRC': [holdout_auprc_score],
+            'Accuracy': [holdout_accuracy],
             'classification_eval_loss': [holdout_classification_loss],
         }
 
@@ -227,6 +240,9 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
         print(f"Holdout KLD_B Loss: {holdout_KLD_loss_B:.4f}")
         print(f"Holdout OT Loss: {holdout_OT_loss:.4f}")
         print(f"Holdout Classification Loss: {holdout_classification_loss:.4f}")
+        print(f"Holdout AUROC: {holdout_auc_score:.4f}")
+        print(f"Holdout AUPRC: {holdout_auprc_score:.4f}")
+        print(f"Holdout Accuracy: {holdout_accuracy:.4f}")
 
         # Logging Info
         log_text = ' - '.join([
@@ -240,7 +256,7 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
     return model, history, holdout_history, best_predicted_values, best_actual_values
 
 
-def train_model_continuous(model, data1_path, data2_path, batch_size, learning_rate, m_type, epochs, save_path, splits, fusion, device, **kwargs):
+def train_model_continuous(model, data1_path, data2_path, batch_size, learning_rate, m_type, epochs, save_path, splits, fusion, device, ot_method='LOT', **kwargs):
     """
     Train the continuous regression model using data from two CSV files.
 
@@ -331,7 +347,10 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
                 # Compute loss components
                 KLD_loss_A = KL_divergence(mu_A, logsigma_A)
                 KLD_loss_B = KL_divergence(mu_B, logsigma_B)
-                OT_loss = LOT(mu_A, logsigma_A, mu_B, logsigma_B)
+                if ot_method == 'LOT': OT_loss = LOT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'aligned': OT_loss = Aligned_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'optimal': OT_loss = Optimal_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'sinkhorn': OT_loss = Sinkhorn_OT(mu_A, logsigma_A, mu_B, logsigma_B)
 
                 # Combine logits and labels for loss calculation
                 if fusion == 'late':

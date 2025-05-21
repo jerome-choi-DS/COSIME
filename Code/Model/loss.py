@@ -6,6 +6,36 @@ def KL_divergence(mu, logsigma):
     return loss
 
 
+def Aligned_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
+    import ot
+    M = ot.dist(mu_src, mu_tgt)
+    # M = M + ot.dist(std_src, std_tgt)
+    loss = M.diag().mean()  # Assumes all aligned
+    return loss
+
+
+def Optimal_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
+    import ot
+    M = ot.dist(mu_src, mu_tgt)
+    # M = M + ot.dist(std_src, std_tgt)
+    a = torch.ones(mu_src.shape[0], device=mu_src.device) / mu_src.shape[0]  # Uniform samples
+    b = torch.ones(mu_tgt.shape[0], device=mu_tgt.device) / mu_tgt.shape[0]
+    G0 = ot.emd(a, b, M).to(torch.bool)
+    loss = M[G0].mean()
+    return loss
+
+
+def Sinkhorn_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
+    import ot
+    M = ot.dist(mu_src, mu_tgt)
+    # M = M + ot.dist(std_src, std_tgt)
+    a = torch.ones(mu_src.shape[0], device=mu_src.device)  #  / mu_src.shape[0]  # Uniform samples
+    b = torch.ones(mu_tgt.shape[0], device=mu_tgt.device)  #  / mu_tgt.shape[0]
+    Gs = ot.sinkhorn(a, b, M, 1e-1, method='sinkhorn_log')
+    loss = (M*Gs).mean()
+    return loss
+
+
 def LOT(mu_src, std_src, mu_tgt, std_tgt, reg=0.1, reg_m=1.0, num_iterations=10, device='cpu', 
         source_weights=None, target_weights=None, idx_q=None, idx_r=None, 
         transport_plan=None, LOT_batch_size=None, domain_regularization=False):

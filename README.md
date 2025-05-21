@@ -37,6 +37,7 @@ python Code/Model/main.py \
   --type="binary" \
   --predictor="regression" \
   --fusion="early" \
+  --ot_method="LOT" \
   --batch_size=32 \
   --epochs=100 \
   --learning_rate=0.0001 \
