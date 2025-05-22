@@ -351,6 +351,7 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
                 elif ot_method == 'aligned': OT_loss = Aligned_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 elif ot_method == 'optimal': OT_loss = Optimal_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 elif ot_method == 'sinkhorn': OT_loss = Sinkhorn_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                else: raise ValueError(f'Optimal transport type `{ot_method}` not found.')
 
                 # Combine logits and labels for loss calculation
                 if fusion == 'late':
