@@ -10,7 +10,7 @@ def Aligned_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
     import ot
     M = ot.dist(mu_src, mu_tgt)
     # M = M + ot.dist(std_src, std_tgt)
-    loss = M.diag().mean()  # Assumes all aligned
+    loss = M.diag().sum()  # Assumes all aligned
     return loss
 
 
@@ -21,7 +21,8 @@ def Optimal_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
     a = torch.ones(mu_src.shape[0], device=mu_src.device) / mu_src.shape[0]  # Uniform samples
     b = torch.ones(mu_tgt.shape[0], device=mu_tgt.device) / mu_tgt.shape[0]
     G0 = ot.emd(a, b, M).to(torch.bool)
-    loss = M[G0].mean()
+    # loss = M[G0].mean()
+    loss = (M*G0.detach()).sum()
     return loss
 
 
@@ -32,7 +33,22 @@ def Sinkhorn_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
     a = torch.ones(mu_src.shape[0], device=mu_src.device)  #  / mu_src.shape[0]  # Uniform samples
     b = torch.ones(mu_tgt.shape[0], device=mu_tgt.device)  #  / mu_tgt.shape[0]
     Gs = ot.sinkhorn(a, b, M, 1e-1, method='sinkhorn_log')
-    loss = (M*Gs).mean()
+    loss = (M*Gs.detach()).sum()
+    return loss
+
+
+def GW_OT(mu_src, std_src, mu_tgt, std_tgt, **kwargs):
+    import ot
+    C1 = torch.cdist(mu_src, mu_src)
+    C2 = torch.cdist(mu_tgt, mu_tgt)
+    # C1 = C1 + torch.cdist(std_src, std_src)
+    # C2 = C2 + torch.cdist(std_tgt, std_tgt)
+    C1, C2 = C1 / C1.max(), C2 / C2.max()
+    p, q = torch.tensor(ot.unif(mu_src.shape[0]), device=mu_src.device), torch.tensor(ot.unif(mu_tgt.shape[0]), device=mu_tgt.device)
+    gw = ot.gromov.gromov_wasserstein(C1, C2, p, q, 'square_loss')
+    # gw = ot.gromov.entropic_gromov_wasserstein(C1, C2, p, q, 'square_loss', epsilon=5e-4, solver='PPA')  # KL
+    # gw = ot.gromov.entropic_gromov_wasserstein(C1, C2, p, q, 'square_loss', epsilon=5e-4, solver='PGD')  # Entropic
+    loss = ((C1 + C2) * gw.detach()).sum()
     return loss
 
 

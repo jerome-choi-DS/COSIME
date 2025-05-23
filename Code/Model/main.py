@@ -16,7 +16,7 @@ def parse_args():
     parser.add_argument('--type', dest='m_type', type=str, choices=['binary', 'continuous'], required=True, help="Task type: binary or continuous.")
     parser.add_argument('--predictor', dest='predictor_type', type=str, choices=['regression', 'NN'], required=True, help="Predictor type: regression or neural network.")
     parser.add_argument('--fusion', type=str, choices=['early', 'late'], required=True, help="Fusion type: early or late.")
-    parser.add_argument('--ot_method', type=str, choices=['LOT', 'aligned', 'optimal', 'sinkhorn'], default='LOTs', help="OT method.")
+    parser.add_argument('--ot_method', type=str, choices=['LOT', 'aligned', 'optimal', 'sinkhorn', 'gw'], default='LOTs', help="OT method.")
     parser.add_argument('--batch_size', type=int, default=32, help="Batch size.")
     parser.add_argument('--learning_rate', type=float, default=0.0001, help="Learning rate.")
     parser.add_argument('--learning_gamma', type=float, default=0.99, help="Learning gamma.")

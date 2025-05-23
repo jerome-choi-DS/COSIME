@@ -6,7 +6,7 @@ import torch.nn as nn
 from sklearn.metrics import roc_auc_score, average_precision_score, mean_squared_error
 import sklearn.model_selection
 from tqdm import tqdm
-from loss import compute_weighted_loss, KL_divergence, LOT, Aligned_OT, Optimal_OT, Sinkhorn_OT
+from loss import compute_weighted_loss, KL_divergence, LOT, Aligned_OT, Optimal_OT, Sinkhorn_OT, GW_OT
 from utils import EarlyStopper
 from torch.utils.data import DataLoader, Subset
 
@@ -113,6 +113,7 @@ def train_model_binary(model, data1_path, data2_path, batch_size, learning_rate,
                 elif ot_method == 'aligned': OT_loss = Aligned_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 elif ot_method == 'optimal': OT_loss = Optimal_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 elif ot_method == 'sinkhorn': OT_loss = Sinkhorn_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'gw': OT_loss = GW_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 else: raise ValueError(f'Optimal transport type `{ot_method}` not found.')
 
                 # Combine logits and labels for loss calculation
@@ -351,6 +352,7 @@ def train_model_continuous(model, data1_path, data2_path, batch_size, learning_r
                 elif ot_method == 'aligned': OT_loss = Aligned_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 elif ot_method == 'optimal': OT_loss = Optimal_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 elif ot_method == 'sinkhorn': OT_loss = Sinkhorn_OT(mu_A, logsigma_A, mu_B, logsigma_B)
+                elif ot_method == 'gw': OT_loss = GW_OT(mu_A, logsigma_A, mu_B, logsigma_B)
                 else: raise ValueError(f'Optimal transport type `{ot_method}` not found.')
 
                 # Combine logits and labels for loss calculation
