@@ -63,7 +63,7 @@ def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_g
 
     print("Saving Shapley values to CSV...")
     shapley_df = pd.DataFrame(shapley_matrix, columns=[f"Feature_{i+1}" for i in range(num_features)])
-    shapley_df.to_csv("/project8/Dissertation_JC/Coop_DOT/Interaction/Simulated_late/binary_low_early/shapley_values.csv", index=False)
+    shapley_df.to_csv("/binary_low_early/shapley_values.csv", index=False)
     print("Shapley values saved to 'shapley_values.csv'.")
 
     if interaction:
@@ -194,7 +194,7 @@ def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb
 
     print("Saving Shapley values to CSV...")
     shapley_df = pd.DataFrame(shapley_matrix, columns=[f"Feature_{i+1}" for i in range(num_features)])
-    shapley_df.to_csv("/project8/Dissertation_JC/Coop_DOT/Interaction/Simulated_late/binary_high_late/shapley_values.csv", index=False)
+    shapley_df.to_csv("/binary_high_late/shapley_values.csv", index=False)
     print("Shapley values saved to 'shapley_values.csv'.")
 
     if interaction:
