@@ -99,7 +99,7 @@ def main():
     parser.add_argument('--max_memory_usage_gb', type=float, default=2.0, help="Max memory usage in GB (default: 2.0)")
     parser.add_argument('--input_dims', required=True, type=str, help="Input dimensions in the form 'dim1,dim2' (e.g., '100,100')")
     parser.add_argument('--model_script_path', type=str, required=True, help="Path to the user's model script.")
-    
+  
     args = parser.parse_args()
     
     input_dims = tuple(map(int, args.input_dims.split(',')))
@@ -118,13 +118,15 @@ def main():
         shapley_matrix, interaction_matrix = monte_carlo_shapley_early_fusion(
             model, X, mc_iterations=args.mc_iterations, 
             batch_size=args.batch_size, interaction=args.interaction, 
-            max_memory_usage_gb=args.max_memory_usage_gb, logger=logger
+            max_memory_usage_gb=args.max_memory_usage_gb, logger=logger,
+            export_dir=args.save,
         )
     elif args.fusion == 'late':
         shapley_matrix, interaction_matrix = monte_carlo_shapley_late_fusion(
             model, X, mc_iterations=args.mc_iterations, 
             batch_size=args.batch_size, interaction=args.interaction, 
-            max_memory_usage_gb=args.max_memory_usage_gb, logger=logger
+            max_memory_usage_gb=args.max_memory_usage_gb, logger=logger,
+            export_dir=args.save,
         )
 
     # Save the results

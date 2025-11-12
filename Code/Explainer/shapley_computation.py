@@ -1,16 +1,18 @@
 # shapley_computation.py
 
+import logging
+import os
+import sys
+import time
+
 import torch
 import torch.nn as nn
 import numpy as np
 from tqdm import tqdm
-import time
-import sys
-import logging
 import pandas as pd
 import numpy as np
 
-def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_gb=2, batch_size=32, interaction=True, logger=None):
+def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_gb=2, batch_size=32, interaction=True, logger=None, export_dir=None):
 
     start_time = time.time()
 
@@ -63,8 +65,10 @@ def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_g
 
     print("Saving Shapley values to CSV...")
     shapley_df = pd.DataFrame(shapley_matrix, columns=[f"Feature_{i+1}" for i in range(num_features)])
-    shapley_df.to_csv("/binary_low_early/shapley_values.csv", index=False)
-    print("Shapley values saved to 'shapley_values.csv'.")
+    if export_dir is not None:
+        shap_path = os.path.join(export_dir, 'shapley_values.csv')
+        shapley_df.to_csv(shap_path, index=False)
+        print(f"Shapley values saved to '{shap_path}'.")
 
     if interaction:
         print("Starting computation of interaction effects...")
@@ -134,7 +138,7 @@ def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_g
 
     return shapley_matrix, interaction_matrix, num_features
 
-def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb=2, batch_size=32, interaction=True, logger=None):
+def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb=2, batch_size=32, interaction=True, logger=None, export_dir=None):
     
     start_time = time.time()
 
@@ -194,8 +198,10 @@ def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb
 
     print("Saving Shapley values to CSV...")
     shapley_df = pd.DataFrame(shapley_matrix, columns=[f"Feature_{i+1}" for i in range(num_features)])
-    shapley_df.to_csv("/binary_high_late/shapley_values.csv", index=False)
-    print("Shapley values saved to 'shapley_values.csv'.")
+    if export_dir is not None:
+        shap_path = os.path.join(export_dir, 'shapley_values.csv')
+        shapley_df.to_csv(shap_path, index=False)
+        print(f"Shapley values saved to '{shap_path}'.")
 
     if interaction:
         print("Starting computation of interaction effects...")
