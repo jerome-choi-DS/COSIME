@@ -136,7 +136,7 @@ def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_g
     end_time = time.time()
     print(f"Total computation time: {end_time - start_time:.2f} seconds.")
 
-    return shapley_matrix, interaction_matrix, num_features
+    return shapley_matrix, interaction_matrix
 
 def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb=2, batch_size=32, interaction=True, logger=None, export_dir=None):
     
@@ -281,6 +281,6 @@ def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb
     end_time = time.time()
     print(f"Total computation time: {end_time - start_time:.2f} seconds.")
         
-    return shapley_matrix, interaction_matrix, num_features
+    return shapley_matrix, interaction_matrix
 
 
