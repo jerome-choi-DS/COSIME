@@ -110,6 +110,8 @@ def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_g
                                 X_masked_j[:, j] = 0
                                 pred_masked_j = model(X_masked_j)
 
+                                pred_full = model(X_batch)
+
                                 interaction_contrib = torch.mean(pred_masked_ij - pred_masked_i - pred_masked_j + pred_full)
 
                             interaction_contribs.append(interaction_contrib)
