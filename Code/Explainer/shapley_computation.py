@@ -110,7 +110,7 @@ def monte_carlo_shapley_early_fusion(model, X, mc_iterations, max_memory_usage_g
                                 X_masked_j[:, j] = 0
                                 pred_masked_j = model(X_masked_j)
 
-                                interaction_contrib = torch.mean(pred_masked_ij - pred_masked_i - pred_masked_j + model(X_batch))
+                                interaction_contrib = torch.mean(pred_masked_ij - pred_masked_i - pred_masked_j + pred_full)
 
                             interaction_contribs.append(interaction_contrib)
 
@@ -259,7 +259,7 @@ def monte_carlo_shapley_late_fusion(model, X, mc_iterations, max_memory_usage_gb
                                 logits_A_mask_full, logits_B_mask_full = logistic_logits
                                 pred_full = torch.cat((logits_A_mask_full, logits_B_mask_full), dim=0)
 
-                                interaction_contrib = torch.mean(pred_full - pred_masked_ij - pred_masked_i - pred_masked_j)
+                                interaction_contrib = torch.mean(pred_masked_ij - pred_masked_i - pred_masked_j + pred_full)
 
                             interaction_contribs.append(interaction_contrib)
 
